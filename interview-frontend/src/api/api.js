@@ -80,13 +80,19 @@ export const assignUsersToProc = async (planId, procedureId, userIds) => {
     }),
   });
 
-  if (!response.ok) throw new Error("Failed to assign users");
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to assign users");
+  }
   return true;
 };
 
 export const getAssignedUsers = async (planId, procedureId) => {
   const url = `${api_url}/PlanProcedureUser?planId=${planId}&procedureId=${procedureId}`;
   const response = await fetch(url);
-  if (!response.ok) throw new Error("Failed to get assigned users");
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to get assigned users");
+  }
   return await response.json();
 };

@@ -5,11 +5,13 @@ import { assignUsersToProc, getAssignedUsers } from "../../../api/api";
 const PlanProcedureItem = ({ procedure, users, planId }) => {
   const [selectedUsers, setSelectedUsers] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadAssignedUsers = async () => {
       try {
         setIsLoading(true);
+        setError("");
         const assignedUsers = await getAssignedUsers(
           planId,
           procedure.procedureId
@@ -20,6 +22,7 @@ const PlanProcedureItem = ({ procedure, users, planId }) => {
         }));
         setSelectedUsers(selectedOptions);
       } catch (error) {
+        setError("Failed to load assigned users");
         console.error("Failed to load assigned users:", error);
       } finally {
         setIsLoading(false);
@@ -32,10 +35,12 @@ const PlanProcedureItem = ({ procedure, users, planId }) => {
   const handleAssignUserToProcedure = async (selected) => {
     try {
       setIsLoading(true);
+      setError("");
       const userIds = selected ? selected.map((s) => s.value) : [];
       await assignUsersToProc(planId, procedure.procedureId, userIds);
       setSelectedUsers(selected);
     } catch (error) {
+      setError("Failed to assign users");
       console.error("Failed to assign users:", error);
     } finally {
       setIsLoading(false);
@@ -44,15 +49,19 @@ const PlanProcedureItem = ({ procedure, users, planId }) => {
 
   return (
     <div className="py-2">
-      <div>{procedure.procedureTitle}</div>
+      <div className="d-flex justify-content-between align-items-center">
+        <div>{procedure.procedureTitle}</div>
+        {error && <div className="text-danger small">{error}</div>}
+      </div>
       <ReactSelect
         className="mt-2"
-        placeholder={isLoading ? "Loading..." : "Select User to Assign"}
+        placeholder={isLoading ? "Loading..." : "Select Users to Assign"}
         isMulti={true}
         options={users}
         value={selectedUsers}
         onChange={handleAssignUserToProcedure}
         isDisabled={isLoading}
+        isLoading={isLoading}
       />
     </div>
   );
